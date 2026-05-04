@@ -1,6 +1,6 @@
 import { getRandomUnpostedNews } from './services/rssService.js';
 import { generateContent } from './services/aiService.js';
-import { downloadRssImage } from './services/imageService.js';
+import { downloadRssImage, downloadGoogleImage } from './services/imageService.js';
 import { sendToTelegram } from './services/telegramService.js';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -20,11 +20,17 @@ async function runBot() {
 
         // 2. Orijinal Haber Görselini İndir (Gemini bağlamı için)
         console.log("\n2. Orijinal haber görseli Gemini için alınıyor...");
-        const imageResult = await downloadRssImage(selectedNews.image);
+        let imageResult = await downloadRssImage(selectedNews.image);
+        
+        if (!imageResult) {
+            // Eğer RSS'te görsel yoksa veya indirilemediyse Google'da ara
+            imageResult = await downloadGoogleImage(selectedNews.title);
+        }
+
         if (imageResult) {
             console.log("✅ Görsel Gemini analizine hazır.");
         } else {
-            console.log("⚠️  Görsel yok, Gemini sadece metinle çalışacak.");
+            console.log("⚠️  Görsel hiçbir şekilde bulunamadı, Gemini sadece metinle çalışacak.");
         }
 
         // 3. Gemini ile Tweet Metni Üret
