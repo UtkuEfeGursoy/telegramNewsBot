@@ -32,7 +32,8 @@ jobs:
         run: npm install
 
       - name: Rastgele Bekleme Süresi Ekle (Random Delay)
-        # GitHub action tam 15 gece tetiklenir ama tweetin atılmasını 0 ile 12 dakika arası rastgele bekletiriz ki robotik durmasın.
+        if: github.event_name != 'workflow_dispatch'
+        # GitHub action tam saatinde tetiklenir ama tweetin atılmasını 0 ile 12 dakika arası rastgele bekletiriz ki robotik durmasın.
         run: |
           sleep $((RANDOM % 720))
 
