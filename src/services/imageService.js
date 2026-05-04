@@ -49,11 +49,41 @@ export async function downloadGoogleImage(query) {
             return null;
         }
 
-        // İlk görseli indirmeyi dene
-        const imageUrl = images[0].url;
-        console.log(`🌐 Google'dan görsel bulundu: ${imageUrl}`);
+        // Başka haber sitelerinin logolu/filigranlı görsellerini almamak için kara liste
+        const blockedDomains = [
+            'sondakika.com', 'aa.com.tr', 'dha.com.tr', 'iha.com.tr', 'ntv.com.tr',
+            'haberturk.com', 'hurriyet.com.tr', 'milliyet.com.tr', 'sozcu.com.tr',
+            'sabah.com.tr', 'ensonhaber.com', 'trthaber.com', 'cnnturk.com',
+            'ahaber.com.tr', 'yenicaggazetesi.com.tr', 'cumhuriyet.com.tr', 'karar.com',
+            'yeniakit.com.tr', 'turkiyegazetesi.com.tr', 'birgun.net', 'gazeteduvar.com.tr',
+            't24.com.tr', 'haber7.com', 'mynet.com', 'haberler.com', 'bundle.app',
+            'youtube.com', 'facebook.com', 'tiktok.com', 'twitter.com', 'x.com'
+        ];
 
-        const response = await fetch(imageUrl, {
+        let selectedImageUrl = null;
+
+        for (const img of images) {
+            const domain = img.origin?.website?.domain?.toLowerCase() || "";
+            const url = img.url.toLowerCase();
+
+            // Eğer domain kara listedeyse veya URL'de logo kelimesi geçiyorsa atla
+            const isBlocked = blockedDomains.some(b => domain.includes(b));
+            const hasLogo = url.includes('logo') || url.includes('icon') || url.includes('watermark');
+
+            if (!isBlocked && !hasLogo) {
+                selectedImageUrl = img.url;
+                console.log(`🌐 Temiz görsel bulundu (${domain}): ${selectedImageUrl}`);
+                break; // İlk temiz görseli bulduk, döngüden çık
+            }
+        }
+
+        // Eğer temiz görsel bulamadıysa mecburen ilk çıkanı al
+        if (!selectedImageUrl) {
+            console.warn("⚠️ Tamamen temiz bir görsel bulunamadı, varsayılan olarak ilk görsel alınıyor.");
+            selectedImageUrl = images[0].url;
+        }
+
+        const response = await fetch(selectedImageUrl, {
             headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ny-bot/1.0)' }
         });
 
