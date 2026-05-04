@@ -1,14 +1,23 @@
 {
-  "name": "twitter-otamasyon",
+  "name": "telegramNewsBot",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "An automated news bot that fetches RSS feeds, generates engaging summaries using Google Gemini AI, and sends them to a Telegram chat.",
+  "main": "src/index.js",
   "scripts": {
+    "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "telegram",
+    "bot",
+    "news",
+    "rss",
+    "gemini",
+    "ai",
+    "automation"
+  ],
+  "author": "Utku Efe Gürsoy",
+  "license": "MIT",
   "type": "module",
   "dependencies": {
     "@google/genai": "^1.51.0",
