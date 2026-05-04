@@ -1,0 +1,52 @@
+name: ny Twitter Bot
+
+on:
+  # TRT (Türkiye) saatiyle 19:00 - 00:00 arası (UTC 16:00 - 20:59)
+  # Her 30 dakikada bir tetiklenir (5 saat boyunca yarım saatte bir = toplam 10 haber)
+  schedule:
+    - cron: '0,30 16-20 * * *'
+  
+  # GitHub üzerinden manuel olarak da çalıştırabilmek için
+  workflow_dispatch:
+
+jobs:
+  tweet:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Auto-commit yapabilmek için tüm geçmişi çekiyoruz
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Rastgele Bekleme Süresi Ekle (Random Delay)
+        # GitHub action tam 15 gece tetiklenir ama tweetin atılmasını 0 ile 12 dakika arası rastgele bekletiriz ki robotik durmasın.
+        run: |
+          sleep $((RANDOM % 720))
+
+      - name: Run Bot
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # Production'da gerçek mesaj atmak için DRY_RUN false yapıyoruz
+          DRY_RUN: 'false'
+        run: node src/index.js
+
+      - name: Update posted_news.json
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update posted news history"
+          file_pattern: "posted_news.json"
